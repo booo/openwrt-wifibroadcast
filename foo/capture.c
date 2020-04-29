@@ -114,19 +114,24 @@ static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int tim
 static int monitor_header_length(unsigned char *packet_buff, ssize_t buff_len, int32_t hw_type)
 {
 	struct radiotap_header *radiotap_hdr;
+	fprintf(stderr, "buff len: %i\n", buff_len);
 	switch (hw_type) {
 	case ARPHRD_IEEE80211_PRISM:
+		fprintf(stderr, "foo\n");
 		if (buff_len <= (ssize_t)PRISM_HEADER_LEN)
 			return -1;
 		else
 			return PRISM_HEADER_LEN;
 
 	case ARPHRD_IEEE80211_RADIOTAP:
+		fprintf(stderr, "bar\n");
 		if (buff_len <= (ssize_t)RADIOTAP_HEADER_LEN)
 			return -1;
 
 		radiotap_hdr = (struct radiotap_header*)packet_buff;
-		if (buff_len <= radiotap_hdr->it_len)
+		fprintf(stderr, "radiotap_hdr len %i \n", htons(radiotap_hdr->it_len));
+		fprintf(stderr, "radiotap_hdr len %x \n", htons(radiotap_hdr->it_len));
+		if (buff_len <= htons(radiotap_hdr->it_len))
 			return -1;
 		else
 			return radiotap_hdr->it_len;
@@ -285,18 +290,25 @@ int main(int argc, char *argv[]) {
 				sizeof(struct ether_header), read_len);
 			continue;
 		}
-
+			fprintf(stderr, "received data\n");
 		switch (dump_if->hw_type) {
 		case ARPHRD_ETHER:
+			fprintf(stderr, "ARPHRD_ETHER\n");
 			//parse_eth_hdr(packet_buff, read_len, read_opt, 0);
 			break;
 		case ARPHRD_IEEE80211_PRISM:
 		case ARPHRD_IEEE80211_RADIOTAP:
+			fprintf(stderr, "ARPHRD_IEEE80211\n");
 			monitor_header_len = monitor_header_length(packet_buff, read_len, dump_if->hw_type);
-			if (monitor_header_len >= 0)
+			fprintf(stderr, "foobarbaz\n");
+			fprintf(stderr, "header_len: %i \n", monitor_header_len);
+			if (monitor_header_len >= 0) {
+				fprintf(stderr, "foo\n");
 				parse_wifi_hdr(packet_buff + monitor_header_len, read_len - monitor_header_len, 0);
+			}
 			break;
 		default:
+			fprintf(stderr, "SHOULD_NOT_HAPPEN\n");
 			/* should not happen */
 			break;
     }
