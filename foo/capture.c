@@ -26,11 +26,24 @@
 
 #include "tcpdump.h"
 
+void print_hex(const char *string, size_t len)
+{
+        unsigned char *p = (unsigned char *) string;
+
+        for (int i=0; i < len; ++i) {
+                if (! (i % 16) && i)
+                        fprintf(stderr, "\n");
+
+                fprintf(stderr, "0x%02x ", p[i]);
+        }
+        fprintf(stderr, "\n\n");
+}
+
 char *oui_ntoa_long(unsigned char *oui) {
   static char asc[18];
   sprintf(asc, "%02x:%02x:%02x:%02x:%02x:%02x\n",
-      ntohs(oui[0]), ntohs(oui[1]), ntohs(oui[2]),
-      ntohs(oui[3]), ntohs(oui[4]), ntohs(oui[5])
+      oui[0], oui[1], oui[2],
+      oui[3], oui[4], oui[5]
       );
   return asc;
 }
@@ -60,6 +73,7 @@ static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int tim
 	 * before we calculate the real size */
 	if (buff_len <= 38)
 		return;
+
 
 	wifi_hdr = (struct ieee80211_hdr *)packet_buff;
 	fc = ntohs(wifi_hdr->frame_control);
@@ -91,15 +105,29 @@ static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int tim
 
 	/* LLC */
 	hdr_len += 8;
-	hdr_len -= sizeof(struct ether_header);
+  // there is no ether_header
+  //hdr_len -= sizeof(struct ether_header);
 
 	if (buff_len <= hdr_len)
 		return;
 
+  print_hex(wifi_hdr->addr1, 6);
+  print_hex(dhost, 6);
+  print_hex(shost, 6);
+  //fprintf(stderr, "%s", oui_ntoa_long(shost));
+  print_hex(packet_buff + 4 + 6, 6);
+  unsigned static char filter[] = { 0x13, 0x22, 0x33, 0x44, 0x55, 0x00 };
+  print_hex(filter, 6);
+  if(memcmp(dhost, filter,  6) == 0) {
+    fprintf(stderr, "YEAH\n");
+  }
+  //print_hex(packet_buff, buff_len);
+
 	buff_len -= hdr_len;
 	packet_buff += hdr_len;
 
-  fprintf(stderr, "%s", oui_ntoa_long(shost));
+  fprintf(stderr, "payload length: %i\n", buff_len);
+  //fprintf(stderr, "%s", oui_ntoa_long(shost));
 	//eth_hdr = (struct ether_header *)packet_buff;
 	//memmove(eth_hdr->ether_shost, shost, ETH_ALEN);
 	//memmove(eth_hdr->ether_dhost, dhost, ETH_ALEN);
@@ -114,27 +142,22 @@ static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int tim
 static int monitor_header_length(unsigned char *packet_buff, ssize_t buff_len, int32_t hw_type)
 {
 	struct radiotap_header *radiotap_hdr;
-	fprintf(stderr, "buff len: %i\n", buff_len);
 	switch (hw_type) {
 	case ARPHRD_IEEE80211_PRISM:
-		fprintf(stderr, "foo\n");
 		if (buff_len <= (ssize_t)PRISM_HEADER_LEN)
 			return -1;
 		else
 			return PRISM_HEADER_LEN;
 
 	case ARPHRD_IEEE80211_RADIOTAP:
-		fprintf(stderr, "bar\n");
 		if (buff_len <= (ssize_t)RADIOTAP_HEADER_LEN)
 			return -1;
 
 		radiotap_hdr = (struct radiotap_header*)packet_buff;
-		fprintf(stderr, "radiotap_hdr len %i \n", htons(radiotap_hdr->it_len));
-		fprintf(stderr, "radiotap_hdr len %x \n", htons(radiotap_hdr->it_len));
-		if (buff_len <= htons(radiotap_hdr->it_len))
+		if (buff_len <= le16toh(radiotap_hdr->it_len))
 			return -1;
 		else
-			return radiotap_hdr->it_len;
+			return le16toh(radiotap_hdr->it_len);
 	}
 
 	return -1;
@@ -290,20 +313,17 @@ int main(int argc, char *argv[]) {
 				sizeof(struct ether_header), read_len);
 			continue;
 		}
-			fprintf(stderr, "received data\n");
 		switch (dump_if->hw_type) {
 		case ARPHRD_ETHER:
-			fprintf(stderr, "ARPHRD_ETHER\n");
 			//parse_eth_hdr(packet_buff, read_len, read_opt, 0);
 			break;
 		case ARPHRD_IEEE80211_PRISM:
 		case ARPHRD_IEEE80211_RADIOTAP:
-			fprintf(stderr, "ARPHRD_IEEE80211\n");
 			monitor_header_len = monitor_header_length(packet_buff, read_len, dump_if->hw_type);
-			fprintf(stderr, "foobarbaz\n");
-			fprintf(stderr, "header_len: %i \n", monitor_header_len);
 			if (monitor_header_len >= 0) {
-				fprintf(stderr, "foo\n");
+        fprintf(stderr, "Packet (%i bytes) received: \n", read_len);
+        fprintf(stderr, "Monitor header length: %i\n", monitor_header_len);
+        //print_hex(packet_buff, read_len);
 				parse_wifi_hdr(packet_buff + monitor_header_len, read_len - monitor_header_len, 0);
 			}
 			break;
