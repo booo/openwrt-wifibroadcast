@@ -120,13 +120,16 @@ static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int tim
   print_hex(filter, 6);
   if(memcmp(dhost, filter,  6) == 0) {
     fprintf(stderr, "YEAH\n");
+    //print_hex(packet_buff, buff_len);
+
+    buff_len -= hdr_len;
+    //packet_buff points to payload
+    packet_buff += hdr_len;
+
+    fprintf(stderr, "payload length: %i\n", buff_len);
+
+    write(STDOUT_FILENO, packet_buff, buff_len);
   }
-  //print_hex(packet_buff, buff_len);
-
-	buff_len -= hdr_len;
-	packet_buff += hdr_len;
-
-  fprintf(stderr, "payload length: %i\n", buff_len);
   //fprintf(stderr, "%s", oui_ntoa_long(shost));
 	//eth_hdr = (struct ether_header *)packet_buff;
 	//memmove(eth_hdr->ether_shost, shost, ETH_ALEN);
