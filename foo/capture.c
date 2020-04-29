@@ -116,7 +116,7 @@ static void parse_wifi_hdr(unsigned char *packet_buff, ssize_t buff_len, int tim
   print_hex(shost, 6);
   //fprintf(stderr, "%s", oui_ntoa_long(shost));
   print_hex(packet_buff + 4 + 6, 6);
-  unsigned static char filter[] = { 0x13, 0x22, 0x33, 0x44, 0x55, 0x00 };
+  unsigned static char filter[] = { 0x13, 0x22, 0x33, 0x44, 0x55, 0x66 };
   print_hex(filter, 6);
   if(memcmp(dhost, filter,  6) == 0) {
     fprintf(stderr, "YEAH\n");
