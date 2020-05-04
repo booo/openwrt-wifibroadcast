@@ -26,6 +26,33 @@
 
 #include "tcpdump.h"
 
+#define IEEE80211_RADIOTAP_MCS_HAVE_BW    0x01
+#define IEEE80211_RADIOTAP_MCS_HAVE_MCS   0x02
+#define IEEE80211_RADIOTAP_MCS_HAVE_GI    0x04
+#define IEEE80211_RADIOTAP_MCS_HAVE_FMT   0x08
+
+#define IEEE80211_RADIOTAP_MCS_BW_20    0
+#define IEEE80211_RADIOTAP_MCS_BW_40    1
+#define IEEE80211_RADIOTAP_MCS_BW_20L   2
+#define IEEE80211_RADIOTAP_MCS_BW_20U   3
+#define IEEE80211_RADIOTAP_MCS_SGI      0x04
+#define IEEE80211_RADIOTAP_MCS_FMT_GF   0x08
+
+#define IEEE80211_RADIOTAP_MCS_HAVE_FEC   0x10
+#define IEEE80211_RADIOTAP_MCS_HAVE_STBC  0x20
+#define IEEE80211_RADIOTAP_MCS_FEC_LDPC   0x10
+#define	IEEE80211_RADIOTAP_MCS_STBC_MASK  0x60
+#define	IEEE80211_RADIOTAP_MCS_STBC_1  1
+#define	IEEE80211_RADIOTAP_MCS_STBC_2  2
+#define	IEEE80211_RADIOTAP_MCS_STBC_3  3
+#define	IEEE80211_RADIOTAP_MCS_STBC_SHIFT 5
+
+#define MCS_KNOWN (IEEE80211_RADIOTAP_MCS_HAVE_MCS | IEEE80211_RADIOTAP_MCS_HAVE_BW | IEEE80211_RADIOTAP_MCS_HAVE_GI | IEEE80211_RADIOTAP_MCS_HAVE_STBC | IEEE80211_RADIOTAP_MCS_HAVE_FEC)
+
+// offset of MCS_FLAGS and MCS index
+#define MCS_FLAGS_OFF 11
+#define MCS_IDX_OFF 12
+
 void print_hex(const char *string, size_t len)
 {
         unsigned char *p = (unsigned char *) string;
@@ -297,14 +324,17 @@ int main(int argc, char *argv[]) {
 		case ARPHRD_IEEE80211_RADIOTAP:
       //send foo here
       fprintf(stderr, "sending payload (%i bytes)\n", read_len);
-      static const char u8aRadiotapHeader[] = {
+      static char u8aRadiotapHeader[] = {
         0x00, 0x00, // <-- radiotap version
-        0x0c, 0x00, // <- radiotap header lengt
-        0x04, 0x80, 0x00, 0x00, // <-- bitmap
-        0x22,
-        0x0,
-        0x18, 0x00
+        0x0d, 0x00, // <- radiotap header length
+        0x00, 0x80, 0x08, 0x00, // <-- radiotap present flags:  RADIOTAP_TX_FLAGS + RADIOTAP_MCS
+        0x08, 0x00,  // RADIOTAP_F_TX_NOACK
+        MCS_KNOWN , 0x00, 0x00 // bitmap, flags, mcs_index
       };
+      uint8_t flags = 0;
+      flags |= IEEE80211_RADIOTAP_MCS_BW_20;
+      u8aRadiotapHeader[MCS_FLAGS_OFF] = flags;
+      u8aRadiotapHeader[MCS_IDX_OFF] = 1;
       static const char ieee_hdr[] = {
         0x08, 0x01, 0x00, 0x00,
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
