@@ -41,11 +41,11 @@
 #define IEEE80211_RADIOTAP_MCS_HAVE_FEC   0x10
 #define IEEE80211_RADIOTAP_MCS_HAVE_STBC  0x20
 #define IEEE80211_RADIOTAP_MCS_FEC_LDPC   0x10
-#define	IEEE80211_RADIOTAP_MCS_STBC_MASK  0x60
-#define	IEEE80211_RADIOTAP_MCS_STBC_1  1
-#define	IEEE80211_RADIOTAP_MCS_STBC_2  2
-#define	IEEE80211_RADIOTAP_MCS_STBC_3  3
-#define	IEEE80211_RADIOTAP_MCS_STBC_SHIFT 5
+#define IEEE80211_RADIOTAP_MCS_STBC_MASK  0x60
+#define IEEE80211_RADIOTAP_MCS_STBC_1  1
+#define IEEE80211_RADIOTAP_MCS_STBC_2  2
+#define IEEE80211_RADIOTAP_MCS_STBC_3  3
+#define IEEE80211_RADIOTAP_MCS_STBC_SHIFT 5
 
 #define MCS_KNOWN (IEEE80211_RADIOTAP_MCS_HAVE_MCS | IEEE80211_RADIOTAP_MCS_HAVE_BW | IEEE80211_RADIOTAP_MCS_HAVE_GI | IEEE80211_RADIOTAP_MCS_HAVE_STBC | IEEE80211_RADIOTAP_MCS_HAVE_FEC)
 
@@ -68,143 +68,143 @@ void print_hex(const char *string, size_t len)
 
 static int monitor_header_length(unsigned char *packet_buff, ssize_t buff_len, int32_t hw_type)
 {
-	struct radiotap_header *radiotap_hdr;
-	switch (hw_type) {
-	case ARPHRD_IEEE80211_PRISM:
-		if (buff_len <= (ssize_t)PRISM_HEADER_LEN)
-			return -1;
-		else
-			return PRISM_HEADER_LEN;
+  struct radiotap_header *radiotap_hdr;
+  switch (hw_type) {
+  case ARPHRD_IEEE80211_PRISM:
+    if (buff_len <= (ssize_t)PRISM_HEADER_LEN)
+      return -1;
+    else
+      return PRISM_HEADER_LEN;
 
-	case ARPHRD_IEEE80211_RADIOTAP:
-		if (buff_len <= (ssize_t)RADIOTAP_HEADER_LEN)
-			return -1;
+  case ARPHRD_IEEE80211_RADIOTAP:
+    if (buff_len <= (ssize_t)RADIOTAP_HEADER_LEN)
+      return -1;
 
-		radiotap_hdr = (struct radiotap_header*)packet_buff;
-		if (buff_len <= le16toh(radiotap_hdr->it_len))
-			return -1;
-		else
-			return le16toh(radiotap_hdr->it_len);
-	}
+    radiotap_hdr = (struct radiotap_header*)packet_buff;
+    if (buff_len <= le16toh(radiotap_hdr->it_len))
+      return -1;
+    else
+      return le16toh(radiotap_hdr->it_len);
+  }
 
-	return -1;
+  return -1;
 }
 
 static volatile sig_atomic_t is_aborted = 0;
 
 static void sig_handler(int sig) {
-	switch (sig) {
-	case SIGINT:
-	case SIGTERM:
-		is_aborted = 1;
-		break;
-	default:
-		break;
-	}
+  switch (sig) {
+  case SIGINT:
+  case SIGTERM:
+    is_aborted = 1;
+    break;
+  default:
+    break;
+  }
 }
 
 static struct dump_if *create_dump_interface(char *iface) {
-	struct dump_if *dump_if;
-	struct ifreq req;
-	int res;
+  struct dump_if *dump_if;
+  struct ifreq req;
+  int res;
 
-	dump_if = malloc(sizeof(struct dump_if));
-	if (!dump_if)
-		return NULL;
+  dump_if = malloc(sizeof(struct dump_if));
+  if (!dump_if)
+    return NULL;
 
-	memset(dump_if, 0, sizeof(struct dump_if));
+  memset(dump_if, 0, sizeof(struct dump_if));
 
-	dump_if->dev = iface;
-	if (strlen(dump_if->dev) > IFNAMSIZ - 1) {
-		fprintf(stderr, "Error - interface name too long: %s\n", dump_if->dev);
-		goto free_dumpif;
-	}
+  dump_if->dev = iface;
+  if (strlen(dump_if->dev) > IFNAMSIZ - 1) {
+    fprintf(stderr, "Error - interface name too long: %s\n", dump_if->dev);
+    goto free_dumpif;
+  }
 
-	dump_if->raw_sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-	if (dump_if->raw_sock < 0) {
-		perror("Error - can't create raw socket");
-		goto free_dumpif;
-	}
+  dump_if->raw_sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+  if (dump_if->raw_sock < 0) {
+    perror("Error - can't create raw socket");
+    goto free_dumpif;
+  }
 
-	memset(&req, 0, sizeof (struct ifreq));
-	strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
-	req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
+  memset(&req, 0, sizeof (struct ifreq));
+  strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
+  req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
 
-	res = ioctl(dump_if->raw_sock, SIOCGIFHWADDR, &req);
-	if (res < 0) {
-		perror("Error - can't create raw socket (SIOCGIFHWADDR)");
-		goto close_socket;
-	}
+  res = ioctl(dump_if->raw_sock, SIOCGIFHWADDR, &req);
+  if (res < 0) {
+    perror("Error - can't create raw socket (SIOCGIFHWADDR)");
+    goto close_socket;
+  }
 
-	dump_if->hw_type = req.ifr_hwaddr.sa_family;
+  dump_if->hw_type = req.ifr_hwaddr.sa_family;
 
-	switch (dump_if->hw_type) {
-	case ARPHRD_ETHER:
-	case ARPHRD_IEEE80211_PRISM:
-	case ARPHRD_IEEE80211_RADIOTAP:
-		break;
-	default:
-		fprintf(stderr, "Error - interface '%s' is of unknown type: %i\n", dump_if->dev, dump_if->hw_type);
-		goto close_socket;
-	}
+  switch (dump_if->hw_type) {
+  case ARPHRD_ETHER:
+  case ARPHRD_IEEE80211_PRISM:
+  case ARPHRD_IEEE80211_RADIOTAP:
+    break;
+  default:
+    fprintf(stderr, "Error - interface '%s' is of unknown type: %i\n", dump_if->dev, dump_if->hw_type);
+    goto close_socket;
+  }
 
-	memset(&req, 0, sizeof (struct ifreq));
-	strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
-	req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
+  memset(&req, 0, sizeof (struct ifreq));
+  strncpy(req.ifr_name, dump_if->dev, IFNAMSIZ);
+  req.ifr_name[sizeof(req.ifr_name) - 1] = '\0';
 
-	res = ioctl(dump_if->raw_sock, SIOCGIFINDEX, &req);
-	if (res < 0) {
-		perror("Error - can't create raw socket (SIOCGIFINDEX)");
-		goto close_socket;
-	}
+  res = ioctl(dump_if->raw_sock, SIOCGIFINDEX, &req);
+  if (res < 0) {
+    perror("Error - can't create raw socket (SIOCGIFINDEX)");
+    goto close_socket;
+  }
 
-	dump_if->addr.sll_family   = AF_PACKET;
-	dump_if->addr.sll_protocol = htons(ETH_P_ALL);
-	dump_if->addr.sll_ifindex  = req.ifr_ifindex;
+  dump_if->addr.sll_family   = AF_PACKET;
+  dump_if->addr.sll_protocol = htons(ETH_P_ALL);
+  dump_if->addr.sll_ifindex  = req.ifr_ifindex;
 
-	res = bind(dump_if->raw_sock, (struct sockaddr *)&dump_if->addr, sizeof(struct sockaddr_ll));
-	if (res < 0) {
-		perror("Error - can't bind raw socket");
-		goto close_socket;
-	}
+  res = bind(dump_if->raw_sock, (struct sockaddr *)&dump_if->addr, sizeof(struct sockaddr_ll));
+  if (res < 0) {
+    perror("Error - can't bind raw socket");
+    goto close_socket;
+  }
 
-	return dump_if;
+  return dump_if;
 
 close_socket:
-	close(dump_if->raw_sock);
+  close(dump_if->raw_sock);
 free_dumpif:
-	free(dump_if);
+  free(dump_if);
 
-	return NULL;
+  return NULL;
 }
 
 int main(int argc, char *argv[]) {
 
-	struct timeval tv;
-	struct dump_if *dump_if, *dump_if_tmp;
+  struct timeval tv;
+  struct dump_if *dump_if, *dump_if_tmp;
   fd_set wait_sockets, tmp_wait_sockets;
-	ssize_t write_len;
-	ssize_t read_len;
-	unsigned char packet_buff[2000];
-	unsigned char payload[1024];
+  ssize_t write_len;
+  ssize_t read_len;
+  unsigned char packet_buff[2000];
+  unsigned char payload[1024];
 
   int ret = EXIT_FAILURE, res, optchar, found_args = 1, max_sock = 0, tmp;
-	int monitor_header_len = -1;
+  int monitor_header_len = -1;
 
-	signal(SIGINT, sig_handler);
-	signal(SIGTERM, sig_handler);
+  signal(SIGINT, sig_handler);
+  signal(SIGTERM, sig_handler);
 
-	FD_ZERO(&wait_sockets);
+  FD_ZERO(&wait_sockets);
 
   fprintf(stderr, "Going to listen on: %s", argv[1]);
   dump_if = create_dump_interface(argv[1]);
-	if (!dump_if) {
-	  close(dump_if->raw_sock);
-		free(dump_if);
+  if (!dump_if) {
+    close(dump_if->raw_sock);
+    free(dump_if);
     return -1;
   }
 
-	if (dump_if->raw_sock > max_sock) {
+  if (dump_if->raw_sock > max_sock) {
     max_sock = dump_if->raw_sock;
   }
 
@@ -213,12 +213,12 @@ int main(int argc, char *argv[]) {
   //TODO use select on STDIN_FILENO to trigger read
   while(read_len = read(STDIN_FILENO, &payload, 1024), read_len > 0 && !is_aborted) {
 
-		switch (dump_if->hw_type) {
-		case ARPHRD_ETHER:
-			//parse_eth_hdr(packet_buff, read_len, read_opt, 0);
-			break;
-		case ARPHRD_IEEE80211_PRISM:
-		case ARPHRD_IEEE80211_RADIOTAP:
+    switch (dump_if->hw_type) {
+    case ARPHRD_ETHER:
+      //parse_eth_hdr(packet_buff, read_len, read_opt, 0);
+      break;
+    case ARPHRD_IEEE80211_PRISM:
+    case ARPHRD_IEEE80211_RADIOTAP:
       //send foo here
       fprintf(stderr, "sending payload (%i bytes)\n", read_len);
       static char u8aRadiotapHeader[] = {
@@ -258,11 +258,11 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "error sending palyload\n");
         fprintf(stderr, "%s\n", strerror(errno));
       }
-			break;
-		default:
-			fprintf(stderr, "SHOULD_NOT_HAPPEN\n");
-			/* should not happen */
-			break;
+      break;
+    default:
+      fprintf(stderr, "SHOULD_NOT_HAPPEN\n");
+      /* should not happen */
+      break;
     }
   }
 }
