@@ -10,4 +10,4 @@ script:
   - /tmp/openwrt-sdk-19.07.2-ar71xx-generic_gcc-7.5.0_musl.Linux-x86_64/scripts/feeds update -a
   - /tmp/openwrt-sdk-19.07.2-ar71xx-generic_gcc-7.5.0_musl.Linux-x86_64/scripts/feeds install -a -p wifibroadcast
   - make defconfig
-  - make package/foo/compile
+  - ./scripts/feeds list -r wifibroadcast | awk '{print $1;}' | xargs -i make package/{}/compile
