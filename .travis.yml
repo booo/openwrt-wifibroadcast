@@ -2,11 +2,12 @@ language: c
 install:
     - cd /tmp
     - wget https://downloads.openwrt.org/releases/19.07.2/targets/ar71xx/generic/openwrt-sdk-19.07.2-ar71xx-generic_gcc-7.5.0_musl.Linux-x86_64.tar.xz
-    - tar -xvf openwrt-sdk-19.07.2-ar71xx-generic_gcc-7.5.0_musl.Linux-x86_64.tar.xz
+    - tar -xf openwrt-sdk-19.07.2-ar71xx-generic_gcc-7.5.0_musl.Linux-x86_64.tar.xz
 script:
   - cd /tmp/openwrt-sdk-19.07.2-ar71xx-generic_gcc-7.5.0_musl.Linux-x86_64
   - cp feeds.conf.default feeds.conf
   - echo "src-link wifibroadcast ${TRAVIS_BUILD_DIR}" >> feeds.conf
   - /tmp/openwrt-sdk-19.07.2-ar71xx-generic_gcc-7.5.0_musl.Linux-x86_64/scripts/feeds.sh update -a
-  - /tmp/openwrt-sdk-19.07.2-ar71xx-generic_gcc-7.5.0_musl.Linux-x86_64/scripts/feeds.sh install -a
+  - /tmp/openwrt-sdk-19.07.2-ar71xx-generic_gcc-7.5.0_musl.Linux-x86_64/scripts/feeds.sh install -a -p wifibroadcast
+  - make defconfig
   - make package/foo/compile
