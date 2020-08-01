@@ -227,6 +227,8 @@ int main(int argc, char *argv[]) {
         u_int8_t        it_pad;
         u_int16_t       it_len;         /* entire length */
         u_int32_t       it_present;     /* fields present */
+        int8_t          tx_power;
+        uint8_t         pad_for_tx_flags;
         u_int16_t       tx_flags;
         u_int8_t        known;
         u_int8_t        flags;
@@ -236,14 +238,15 @@ int main(int argc, char *argv[]) {
       struct ieee80211_radiotap_header header;
       header.it_version = 0x00;
       header.it_pad = 0x00;
-      header.it_len = 13;
+      header.it_len = sizeof(header);
       header.it_present = 0;
-      header.it_present |= (1 << 15) | (1<<19);
+      header.it_present |= (1 << 10) | (1 << 15) | (1<<19);
       header.tx_flags = 0x0800;
       header.known = MCS_KNOWN;
       header.flags = 0;
       header.flags |= IEEE80211_RADIOTAP_MCS_BW_20;
       header.mcs = 2;
+      header.tx_power = 0;
 
       static char u8aRadiotapHeader[] = {
         0x00, 0x00, // <-- radiotap version
@@ -274,11 +277,11 @@ int main(int argc, char *argv[]) {
       //src, dst, size
       //memcpy(packet_buff, u8aRadiotapHeader, sizeof(u8aRadiotapHeader));
       memcpy(packet_buff, &header, sizeof(header));
-      memcpy(packet_buff + sizeof(u8aRadiotapHeader), ieee_hdr, sizeof(ieee_hdr));
-      memcpy(packet_buff + sizeof(u8aRadiotapHeader) + sizeof(ieee_hdr), payload, read_len);
+      memcpy(packet_buff + sizeof(header), ieee_hdr, sizeof(ieee_hdr));
+      memcpy(packet_buff + sizeof(header) + sizeof(ieee_hdr), payload, read_len);
 
 
-      ret = send(dump_if->raw_sock, packet_buff, sizeof(u8aRadiotapHeader) + sizeof(ieee_hdr) + read_len, 0);
+      ret = send(dump_if->raw_sock, packet_buff, sizeof(header) + sizeof(ieee_hdr) + read_len, 0);
       if(ret == -1) {
         fprintf(stderr, "error sending palyload\n");
         fprintf(stderr, "%s\n", strerror(errno));
