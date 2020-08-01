@@ -221,6 +221,30 @@ int main(int argc, char *argv[]) {
     case ARPHRD_IEEE80211_RADIOTAP:
       //send foo here
       fprintf(stderr, "sending payload (%i bytes)\n", read_len);
+
+      struct ieee80211_radiotap_header {
+        u_int8_t        it_version;     /* set to 0 */
+        u_int8_t        it_pad;
+        u_int16_t       it_len;         /* entire length */
+        u_int32_t       it_present;     /* fields present */
+        u_int16_t       tx_flags;
+        u_int8_t        known;
+        u_int8_t        flags;
+        u_int8_t        mcs;
+      } __attribute__((__packed__));
+
+      struct ieee80211_radiotap_header header;
+      header.it_version = 0x00;
+      header.it_pad = 0x00;
+      header.it_len = 13;
+      header.it_present = 0;
+      header.it_present |= (1 << 15) | (1<<19);
+      header.tx_flags = 0x0800;
+      header.known = MCS_KNOWN;
+      header.flags = 0;
+      header.flags |= IEEE80211_RADIOTAP_MCS_BW_20;
+      header.mcs = 2;
+
       static char u8aRadiotapHeader[] = {
         0x00, 0x00, // <-- radiotap version
         0x0d, 0x00, // <- radiotap header length
@@ -248,7 +272,8 @@ int main(int argc, char *argv[]) {
       //memcpy(ieee_hdr.addr3, addr, ETH_ALEN);
       //ieee_hdr.seq_ctrl = 0;
       //src, dst, size
-      memcpy(packet_buff, u8aRadiotapHeader, sizeof(u8aRadiotapHeader));
+      //memcpy(packet_buff, u8aRadiotapHeader, sizeof(u8aRadiotapHeader));
+      memcpy(packet_buff, &header, sizeof(header));
       memcpy(packet_buff + sizeof(u8aRadiotapHeader), ieee_hdr, sizeof(ieee_hdr));
       memcpy(packet_buff + sizeof(u8aRadiotapHeader) + sizeof(ieee_hdr), payload, read_len);
 
