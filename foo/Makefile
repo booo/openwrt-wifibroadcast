@@ -26,6 +26,7 @@ define Build/Prepare
 	$(CP) CMakeLists.txt $(PKG_BUILD_DIR)
 	$(CP) capture.c $(PKG_BUILD_DIR)
 	$(CP) transmit.c $(PKG_BUILD_DIR)
+	$(CP) generate.c $(PKG_BUILD_DIR)
 	$(CP) tcpdump.h $(PKG_BUILD_DIR)
 	$(call Build/Prepare/Default)
 endef
@@ -42,6 +43,7 @@ define Package/foo/install
 	$(INSTALL_DIR) $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/capture $(1)/usr/bin/foo_capture
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/transmit $(1)/usr/bin/foo_transmit
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/generate $(1)/usr/bin/foo_generate
 	$(call Build/Install/Default)
 endef
 
