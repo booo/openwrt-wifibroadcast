@@ -248,17 +248,6 @@ int main(int argc, char *argv[]) {
       header.mcs = 2;
       header.tx_power = 0;
 
-      static char u8aRadiotapHeader[] = {
-        0x00, 0x00, // <-- radiotap version
-        0x0d, 0x00, // <- radiotap header length
-        0x00, 0x80, 0x08, 0x00, // <-- radiotap present flags:  RADIOTAP_TX_FLAGS + RADIOTAP_MCS
-        0x08, 0x00,  // RADIOTAP_F_TX_NOACK
-        MCS_KNOWN , 0x00, 0x00 // bitmap, flags, mcs_index
-      };
-      uint8_t flags = 0;
-      flags |= IEEE80211_RADIOTAP_MCS_BW_20;
-      u8aRadiotapHeader[MCS_FLAGS_OFF] = flags;
-      u8aRadiotapHeader[MCS_IDX_OFF] = 1;
       static const char ieee_hdr[] = {
         0x08, 0x01, 0x00, 0x00,
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -275,7 +264,6 @@ int main(int argc, char *argv[]) {
       //memcpy(ieee_hdr.addr3, addr, ETH_ALEN);
       //ieee_hdr.seq_ctrl = 0;
       //src, dst, size
-      //memcpy(packet_buff, u8aRadiotapHeader, sizeof(u8aRadiotapHeader));
       memcpy(packet_buff, &header, sizeof(header));
       memcpy(packet_buff + sizeof(header), ieee_hdr, sizeof(ieee_hdr));
       memcpy(packet_buff + sizeof(header) + sizeof(ieee_hdr), payload, read_len);
