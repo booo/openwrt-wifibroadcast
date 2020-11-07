@@ -200,7 +200,6 @@ int main(int argc, char *argv[]) {
 
     switch (dump_if->hw_type) {
     case ARPHRD_ETHER:
-      //parse_eth_hdr(packet_buff, read_len, read_opt, 0);
       break;
     case ARPHRD_IEEE80211_PRISM:
     case ARPHRD_IEEE80211_RADIOTAP:
