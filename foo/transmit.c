@@ -66,30 +66,6 @@ void print_hex(const char *string, size_t len)
         fprintf(stderr, "\n\n");
 }
 
-static int monitor_header_length(unsigned char *packet_buff, ssize_t buff_len, int32_t hw_type)
-{
-  struct radiotap_header *radiotap_hdr;
-  switch (hw_type) {
-  case ARPHRD_IEEE80211_PRISM:
-    if (buff_len <= (ssize_t)PRISM_HEADER_LEN)
-      return -1;
-    else
-      return PRISM_HEADER_LEN;
-
-  case ARPHRD_IEEE80211_RADIOTAP:
-    if (buff_len <= (ssize_t)RADIOTAP_HEADER_LEN)
-      return -1;
-
-    radiotap_hdr = (struct radiotap_header*)packet_buff;
-    if (buff_len <= le16toh(radiotap_hdr->it_len))
-      return -1;
-    else
-      return le16toh(radiotap_hdr->it_len);
-  }
-
-  return -1;
-}
-
 static volatile sig_atomic_t is_aborted = 0;
 
 static void sig_handler(int sig) {
