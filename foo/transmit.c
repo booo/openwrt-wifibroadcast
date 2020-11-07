@@ -205,14 +205,17 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
+  // copy headers to packet buffer once at the start
+  memcpy(packet_buff, &header, sizeof(header));
+  memcpy(packet_buff + sizeof(header), ieee_hdr, sizeof(ieee_hdr));
+
   //TODO use select on STDIN_FILENO to trigger read
   while(read_len = read(STDIN_FILENO, &payload, 1024), read_len > 0 && !is_aborted) {
 
       //send foo here
       fprintf(stderr, "sending payload (%li bytes)\n", read_len);
 
-      memcpy(packet_buff, &header, sizeof(header));
-      memcpy(packet_buff + sizeof(header), ieee_hdr, sizeof(ieee_hdr));
+      // copy payload of length read_len to packet buffer
       memcpy(packet_buff + sizeof(header) + sizeof(ieee_hdr), payload, read_len);
 
       ret = send(dump_if->raw_sock, packet_buff, sizeof(header) + sizeof(ieee_hdr) + read_len, 0);
