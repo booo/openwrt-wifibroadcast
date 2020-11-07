@@ -154,6 +154,14 @@ struct ieee80211_radiotap_header {
   u_int8_t        mcs;
 } __attribute__((__packed__));
 
+static const char ieee_hdr[] = {
+  0x08, 0x01, 0x00, 0x00,
+  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+  0x13, 0x22, 0x33, 0x44, 0x55, 0x66,
+  0x13, 0x22, 0x33, 0x44, 0x55, 0x66,
+  0x10, 0x86,
+};
+
 int main(int argc, char *argv[]) {
 
   struct dump_if *dump_if;
@@ -199,15 +207,6 @@ int main(int argc, char *argv[]) {
       header.flags |= IEEE80211_RADIOTAP_MCS_BW_20;
       header.mcs = 2;
       header.tx_power = 0;
-
-      static const char ieee_hdr[] = {
-        0x08, 0x01, 0x00, 0x00,
-        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-        0x13, 0x22, 0x33, 0x44, 0x55, 0x66,
-        0x13, 0x22, 0x33, 0x44, 0x55, 0x66,
-        0x10, 0x86,
-      };
-
       memcpy(packet_buff, &header, sizeof(header));
       memcpy(packet_buff + sizeof(header), ieee_hdr, sizeof(ieee_hdr));
       memcpy(packet_buff + sizeof(header) + sizeof(ieee_hdr), payload, read_len);
