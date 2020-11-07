@@ -23,8 +23,7 @@
 #include <stdint.h>
 #include <sys/select.h>
 #include <sys/socket.h>
-
-#include "tcpdump.h"
+#include <netpacket/packet.h>
 
 #define IEEE80211_RADIOTAP_MCS_HAVE_BW    0x01
 #define IEEE80211_RADIOTAP_MCS_HAVE_MCS   0x02
@@ -65,6 +64,13 @@ static void sig_handler(int sig) {
     break;
   }
 }
+
+struct dump_if {
+	char *dev;
+	int32_t raw_sock;
+	struct sockaddr_ll addr;
+	int32_t hw_type;
+};
 
 static struct dump_if *create_dump_interface(char *iface) {
   struct dump_if *dump_if;
