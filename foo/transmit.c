@@ -171,6 +171,19 @@ int main(int argc, char *argv[]) {
 
   int ret = EXIT_FAILURE;
 
+  struct ieee80211_radiotap_header header;
+  header.it_version = 0x00;
+  header.it_pad = 0x00;
+  header.it_len = sizeof(header);
+  header.it_present = 0;
+  header.it_present |= (1 << 10) | (1 << 15) | (1<<19);
+  header.tx_flags = 0x0800;
+  header.known = MCS_KNOWN;
+  header.flags = 0;
+  header.flags |= IEEE80211_RADIOTAP_MCS_BW_20;
+  header.mcs = 2;
+  header.tx_power = 0;
+
   signal(SIGINT, sig_handler);
   signal(SIGTERM, sig_handler);
 
@@ -194,23 +207,9 @@ int main(int argc, char *argv[]) {
       //send foo here
       fprintf(stderr, "sending payload (%li bytes)\n", read_len);
 
-
-      struct ieee80211_radiotap_header header;
-      header.it_version = 0x00;
-      header.it_pad = 0x00;
-      header.it_len = sizeof(header);
-      header.it_present = 0;
-      header.it_present |= (1 << 10) | (1 << 15) | (1<<19);
-      header.tx_flags = 0x0800;
-      header.known = MCS_KNOWN;
-      header.flags = 0;
-      header.flags |= IEEE80211_RADIOTAP_MCS_BW_20;
-      header.mcs = 2;
-      header.tx_power = 0;
       memcpy(packet_buff, &header, sizeof(header));
       memcpy(packet_buff + sizeof(header), ieee_hdr, sizeof(ieee_hdr));
       memcpy(packet_buff + sizeof(header) + sizeof(ieee_hdr), payload, read_len);
-
 
       ret = send(dump_if->raw_sock, packet_buff, sizeof(header) + sizeof(ieee_hdr) + read_len, 0);
       if(ret == -1) {
