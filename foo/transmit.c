@@ -141,6 +141,19 @@ free_dumpif:
   return NULL;
 }
 
+struct ieee80211_radiotap_header {
+  u_int8_t        it_version;     /* set to 0 */
+  u_int8_t        it_pad;
+  u_int16_t       it_len;         /* entire length */
+  u_int32_t       it_present;     /* fields present */
+  int8_t          tx_power;
+  uint8_t         pad_for_tx_flags;
+  u_int16_t       tx_flags;
+  u_int8_t        known;
+  u_int8_t        flags;
+  u_int8_t        mcs;
+} __attribute__((__packed__));
+
 int main(int argc, char *argv[]) {
 
   struct dump_if *dump_if;
@@ -173,18 +186,6 @@ int main(int argc, char *argv[]) {
       //send foo here
       fprintf(stderr, "sending payload (%li bytes)\n", read_len);
 
-      struct ieee80211_radiotap_header {
-        u_int8_t        it_version;     /* set to 0 */
-        u_int8_t        it_pad;
-        u_int16_t       it_len;         /* entire length */
-        u_int32_t       it_present;     /* fields present */
-        int8_t          tx_power;
-        uint8_t         pad_for_tx_flags;
-        u_int16_t       tx_flags;
-        u_int8_t        known;
-        u_int8_t        flags;
-        u_int8_t        mcs;
-      } __attribute__((__packed__));
 
       struct ieee80211_radiotap_header header;
       header.it_version = 0x00;
