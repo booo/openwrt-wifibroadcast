@@ -53,19 +53,6 @@
 #define MCS_FLAGS_OFF 11
 #define MCS_IDX_OFF 12
 
-void print_hex(const char *string, size_t len)
-{
-        unsigned char *p = (unsigned char *) string;
-
-        for (int i=0; i < len; ++i) {
-                if (! (i % 16) && i)
-                        fprintf(stderr, "\n");
-
-                fprintf(stderr, "0x%02x ", p[i]);
-        }
-        fprintf(stderr, "\n\n");
-}
-
 static volatile sig_atomic_t is_aborted = 0;
 
 static void sig_handler(int sig) {
