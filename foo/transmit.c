@@ -144,17 +144,14 @@ free_dumpif:
 int main(int argc, char *argv[]) {
 
   struct dump_if *dump_if;
-  fd_set wait_sockets;
   ssize_t read_len;
   unsigned char packet_buff[2000];
   unsigned char payload[1024];
 
-  int ret = EXIT_FAILURE, max_sock = 0;
+  int ret = EXIT_FAILURE;
 
   signal(SIGINT, sig_handler);
   signal(SIGTERM, sig_handler);
-
-  FD_ZERO(&wait_sockets);
 
   fprintf(stderr, "Going to listen on: %s", argv[1]);
   dump_if = create_dump_interface(argv[1]);
@@ -163,12 +160,6 @@ int main(int argc, char *argv[]) {
     free(dump_if);
     return -1;
   }
-
-  if (dump_if->raw_sock > max_sock) {
-    max_sock = dump_if->raw_sock;
-  }
-
-  FD_SET(dump_if->raw_sock, &wait_sockets);
 
   //TODO use select on STDIN_FILENO to trigger read
   while(read_len = read(STDIN_FILENO, &payload, 1024), read_len > 0 && !is_aborted) {
