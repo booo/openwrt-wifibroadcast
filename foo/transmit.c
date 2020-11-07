@@ -195,14 +195,13 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
+  if (dump_if->hw_type != ARPHRD_IEEE80211_RADIOTAP) {
+    return -1;
+  }
+
   //TODO use select on STDIN_FILENO to trigger read
   while(read_len = read(STDIN_FILENO, &payload, 1024), read_len > 0 && !is_aborted) {
 
-    switch (dump_if->hw_type) {
-    case ARPHRD_ETHER:
-      break;
-    case ARPHRD_IEEE80211_PRISM:
-    case ARPHRD_IEEE80211_RADIOTAP:
       //send foo here
       fprintf(stderr, "sending payload (%li bytes)\n", read_len);
 
@@ -215,11 +214,5 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "error sending palyload\n");
         fprintf(stderr, "%s\n", strerror(errno));
       }
-      break;
-    default:
-      fprintf(stderr, "SHOULD_NOT_HAPPEN\n");
-      /* should not happen */
-      break;
-    }
   }
 }
