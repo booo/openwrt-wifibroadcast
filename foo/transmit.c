@@ -143,16 +143,13 @@ free_dumpif:
 
 int main(int argc, char *argv[]) {
 
-  struct timeval tv;
-  struct dump_if *dump_if, *dump_if_tmp;
-  fd_set wait_sockets, tmp_wait_sockets;
-  ssize_t write_len;
+  struct dump_if *dump_if;
+  fd_set wait_sockets;
   ssize_t read_len;
   unsigned char packet_buff[2000];
   unsigned char payload[1024];
 
-  int ret = EXIT_FAILURE, res, optchar, found_args = 1, max_sock = 0, tmp;
-  int monitor_header_len = -1;
+  int ret = EXIT_FAILURE, max_sock = 0;
 
   signal(SIGINT, sig_handler);
   signal(SIGTERM, sig_handler);
@@ -183,7 +180,7 @@ int main(int argc, char *argv[]) {
     case ARPHRD_IEEE80211_PRISM:
     case ARPHRD_IEEE80211_RADIOTAP:
       //send foo here
-      fprintf(stderr, "sending payload (%i bytes)\n", read_len);
+      fprintf(stderr, "sending payload (%li bytes)\n", read_len);
 
       struct ieee80211_radiotap_header {
         u_int8_t        it_version;     /* set to 0 */
