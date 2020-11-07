@@ -173,7 +173,6 @@ int main(int argc, char *argv[]) {
   struct dump_if *dump_if;
   ssize_t read_len;
   unsigned char packet_buff[2000];
-  unsigned char payload[1024];
 
   int ret = EXIT_FAILURE;
 
@@ -209,14 +208,12 @@ int main(int argc, char *argv[]) {
   memcpy(packet_buff, &header, sizeof(header));
   memcpy(packet_buff + sizeof(header), ieee_hdr, sizeof(ieee_hdr));
 
-  //TODO use select on STDIN_FILENO to trigger read
-  while(read_len = read(STDIN_FILENO, &payload, 1024), read_len > 0 && !is_aborted) {
+  // read payload data to packet buffer
+  // payload length is read_len
+  while(read_len = read(STDIN_FILENO, packet_buff + sizeof(header) + sizeof(ieee_hdr), 1024), read_len > 0 && !is_aborted) {
 
       //send foo here
       fprintf(stderr, "sending payload (%li bytes)\n", read_len);
-
-      // copy payload of length read_len to packet buffer
-      memcpy(packet_buff + sizeof(header) + sizeof(ieee_hdr), payload, read_len);
 
       ret = send(dump_if->raw_sock, packet_buff, sizeof(header) + sizeof(ieee_hdr) + read_len, 0);
       if(ret == -1) {
