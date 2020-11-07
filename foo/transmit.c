@@ -232,14 +232,6 @@ int main(int argc, char *argv[]) {
         0x10, 0x86,
       };
 
-      //ieee_hdr.frame_control = (2 << 2 | 0 << 4) << 8 | 0x02 ;
-      //ieee_hdr.duration_id = 0xffff;
-      //unsigned static char addr[] = { 0x13, 0x22, 0x33, 0x44, 0x55, 0x00 };
-      //memcpy(ieee_hdr.addr1, addr, ETH_ALEN);
-      //memcpy(ieee_hdr.addr2, addr, ETH_ALEN);
-      //memcpy(ieee_hdr.addr3, addr, ETH_ALEN);
-      //ieee_hdr.seq_ctrl = 0;
-      //src, dst, size
       memcpy(packet_buff, &header, sizeof(header));
       memcpy(packet_buff + sizeof(header), ieee_hdr, sizeof(ieee_hdr));
       memcpy(packet_buff + sizeof(header) + sizeof(ieee_hdr), payload, read_len);
