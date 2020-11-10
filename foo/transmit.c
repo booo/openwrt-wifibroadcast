@@ -177,6 +177,30 @@ int main(int argc, char *argv[]) {
   int ret = EXIT_FAILURE;
 
   struct ieee80211_radiotap_header header;
+
+  int opt;
+  int mcs_index = 0;
+  int tx_power = 0;
+
+  while((opt = getopt(argc, argv, "m:p:")) != -1) {
+    switch(opt) {
+      case 'm':
+        mcs_index = atoi(optarg);
+        break;
+      case 'p':
+        tx_power = atoi(optarg);
+        break;
+      default:
+        fprintf(stderr, "Usage: %s [-m mcs_index -p tx_power] interface\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+  }
+  if (optind == argc) {
+    fprintf(stderr, "Interface argument required!\n");
+    fprintf(stderr, "Usage: %s [-m mcs_index -p tx_power] interface\n", argv[0]);
+    exit(EXIT_FAILURE);
+  }
+
   header.it_version = 0x00;
   header.it_pad = 0x00;
   header.it_len = sizeof(header);
@@ -186,14 +210,14 @@ int main(int argc, char *argv[]) {
   header.known = MCS_KNOWN;
   header.flags = 0;
   header.flags |= IEEE80211_RADIOTAP_MCS_BW_20;
-  header.mcs = 2;
-  header.tx_power = 0;
+  header.mcs = mcs_index;
+  header.tx_power = tx_power;
 
   signal(SIGINT, sig_handler);
   signal(SIGTERM, sig_handler);
 
-  fprintf(stderr, "Going to listen on: %s", argv[1]);
-  dump_if = create_dump_interface(argv[1]);
+  fprintf(stderr, "Going to listen on: %s\n", argv[optind]);
+  dump_if = create_dump_interface(argv[optind]);
   if (!dump_if) {
     close(dump_if->raw_sock);
     free(dump_if);
