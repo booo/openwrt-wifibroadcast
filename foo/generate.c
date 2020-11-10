@@ -6,8 +6,8 @@
 
 int main(int argc, char *argv[]) {
   struct packet {
-    uint16_t seq;
     char data[1020];
+    uint32_t seq;
   };
   struct packet p;
   p.seq = 0;
