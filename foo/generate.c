@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
 
 int main(int argc, char *argv[]) {
   struct packet {
-    u_int16_t seq;
+    uint16_t seq;
     char data[1020];
   };
   struct packet p;
