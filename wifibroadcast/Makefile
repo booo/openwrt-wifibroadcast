@@ -41,6 +41,8 @@ define Package/wifibroadcast/install
 	$(INSTALL_DIR) $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/rx $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/tx $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/rx_status_csv $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/rx_status_test $(1)/usr/bin/
 	$(call Build/Install/Default)
 endef
 
